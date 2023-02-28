@@ -21,7 +21,9 @@ services:
       - PHP_DEBUGGER=1
       - XDEBUG_MODE=debug
       - XDEBUG_CLIENT_PORT=9003
-      - XDEBUG_DISCOVER_CLIENT_HOST=false
+      - XDEBUG_DISCOVER_CLIENT_HOST=1
+      - XDEBUG_START_WITH_REQUEST=1
+      - XDEBUG_REMOTE_AUTOSTART=1
       - XDEBUG_IDE_KEY=PHPSTORM
     volumes:
       - ../:/app:cached

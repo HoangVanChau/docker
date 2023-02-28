@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 webdevops/php-nginx:8.0
+FROM --platform=linux/amd64 webdevops/php-nginx-dev:8.0
 
 RUN apt-get install -qq -y curl gnupg && \
             echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" > /etc/apt/sources.list.d/mssql.list && \
