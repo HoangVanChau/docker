@@ -1,0 +1,133 @@
+version: "3.7"
+services:
+  app:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app
+    container_name: app
+    restart: always
+    user: root
+    environment:
+      - WEB_ALIAS_DOMAIN=local.crm.vn
+      - WEB_DOCUMENT_ROOT=/app
+      - PHP_DATE_TIMEZONE=UTC
+      - PHP_DISPLAY_ERRORS=1
+      - PHP_MEMORY_LIMIT=2048M
+      - PHP_MAX_EXECUTION_TIME=180000
+      - PHP_POST_MAX_SIZE=500M
+      - PHP_UPLOAD_MAX_FILESIZE=1024M
+      - PHP_DEBUGGER=1
+      - XDEBUG_MODE=debug
+      - XDEBUG_CLIENT_PORT=9003
+      - XDEBUG_DISCOVER_CLIENT_HOST=false
+      - XDEBUG_IDE_KEY=PHPSTORM
+    volumes:
+      - ../:/app:cached
+      - ./config/nginx/:/opt/docker/etc/nginx/conf.d
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
+
+  #MySQL Service
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD:-root}'
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - mariadbdata:/var/lib/mysql/
+    networks:
+      - app-network
+
+  #MSSQL Service
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge
+    container_name: mssql
+    environment:
+      - MSSQL_SA_PASSWORD=${MSSQL_PASSWORD}
+      - ACCEPT_EULA=Y
+    volumes:
+       - mssqldata:/var/opt/mssql
+    ports:
+      - "${MSSQL_PORT}:1433"
+    networks:
+      - app-network
+
+  #Mail Service
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - app-network
+
+  #Redis Service
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  #Mongo Service
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - '${MONGO_DATABASE_PORT:-27017}:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: '${MONGO_USERNAME}'
+      MONGO_INITDB_ROOT_PASSWORD: '${MONGO_PASSWORD}'
+      MONGO_INITDB_DATABASE: '${MONGO_DATABASE}'
+    volumes:
+      - mongodata:/data
+    networks:
+      - app-network
+
+  #Elasticsearch service
+  elasticsearch:
+    image: elasticsearch:8.4.3
+    container_name: elasticsearch
+    ports:
+      - "9300:9200"
+    volumes:
+      - elasticsearchdata:/data
+    hostname: elasticsearch
+    cpu_shares: 512             # 0.5 CPU
+    mem_limit: 536870912        # 512 MB RAM
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+    
+#Volumes
+volumes:
+  mariadbdata:
+    driver: local
+  redisdata:
+    driver: local
+  mongodata:
+    driver: local
+  elasticsearchdata:
+    driver: local
+  mssqldata:
+    driver: local
