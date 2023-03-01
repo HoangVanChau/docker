@@ -11,6 +11,13 @@ RUN apt-get install -qq -y curl gnupg && \
 RUN pecl install sqlsrv pdo_sqlsrv \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
+# Install NodeJs
+RUN curl -sL https://deb.nodesource.com/setup_14.x| bash -
+RUN apt-get install -y nodejs
+
+RUN npm install -g npm
+
+
 RUN wget -O "/usr/local/bin/go-replace" "https://github.com/webdevops/goreplace/releases/download/1.1.2/gr-arm64-linux" \
    && chmod +x "/usr/local/bin/go-replace" \
    && "/usr/local/bin/go-replace" --version
