@@ -1,0 +1,25 @@
+FROM --platform=linux/amd64 webdevops/php-nginx-dev:7.4
+
+# Install NodeJs
+RUN curl -sL https://deb.nodesource.com/setup_14.x| bash -
+RUN apt-get install -y nodejs
+
+RUN npm install -g npm
+
+
+RUN wget -O "/usr/local/bin/go-replace" "https://github.com/webdevops/goreplace/releases/download/1.1.2/gr-arm64-linux" \
+   && chmod +x "/usr/local/bin/go-replace" \
+   && "/usr/local/bin/go-replace" --version
+
+# Install OpenSSH and set the password for root to "Docker!". In this example, "apk add" is the install instruction for an Alpine Linux-based image.
+RUN apt-install openssh-server \
+     && echo "root:Docker!" | chpasswd
+
+# Copy the sshd_config file to the /etc/ssh/ directory
+# COPY docker/sshd_config /etc/ssh/
+
+COPY --chown=application:application  . /app
+WORKDIR /app
+USER application
+
+EXPOSE 80 443 2222
