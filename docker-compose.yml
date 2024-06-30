@@ -1,7 +1,45 @@
 version: "3.7"
 services:
-
-
+  #PHP 8.2 Service
+  php82:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile82
+    image: php8.2
+    container_name: php82
+    user: root
+    environment:
+      - WEB_ALIAS_DOMAIN=local.com
+      - WEB_DOCUMENT_ROOT=/app/fss/magi-front/public
+      - PHP_DATE_TIMEZONE=UTC
+      - PHP_DISPLAY_ERRORS=1
+      - PHP_MEMORY_LIMIT=2048M
+      - PHP_MAX_EXECUTION_TIME=180000
+      - PHP_POST_MAX_SIZE=500M
+      - PHP_UPLOAD_MAX_FILESIZE=1024M
+      - PHP_DEBUGGER=1
+      - XDEBUG_MODE=debug
+      - XDEBUG_CLIENT_PORT=9000
+      - XDEBUG_CLIENT_HOST=host.docker.internal
+      - XDEBUG_DISCOVER_CLIENT_HOST=1
+      - XDEBUG_START_WITH_REQUEST=1
+      - XDEBUG_REMOTE_AUTOSTART=1
+      - XDEBUG_PROFILER_ENABLE=1
+      - XDEBUG_PROFILER_ENABLE_TRIGGER=1
+      - XDEBUG_IDE_KEY=PHPSTORM
+      - NEW_RELIC_LICENSE_KEY=369c54b44ea9d0cfd226dc4d134b624bFFFFNRAL
+      - NEW_RELIC_APPNAME=local
+    volumes:
+      - ../:/app:cached
+      - ./config/nginx/:/opt/docker/etc/nginx/conf.d
+    ports:
+      - "80:80"
+      - "443:443"
+      - "5173:5173"
+      - "3000:3000"
+    networks:
+      - app-network
   #PHP 8.1 Service
   php81:
     platform: linux/amd64
@@ -13,7 +51,7 @@ services:
     user: root
     environment:
       - WEB_ALIAS_DOMAIN=local.com
-      - WEB_DOCUMENT_ROOT=/app
+      - WEB_DOCUMENT_ROOT=/app/fss/magi-front/public
       - PHP_DATE_TIMEZONE=UTC
       - PHP_DISPLAY_ERRORS=1
       - PHP_MEMORY_LIMIT=2048M
@@ -103,6 +141,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
+      - "8000:8000"
     networks:
       - app-network
 
@@ -170,11 +210,25 @@ services:
       - "3306:3306"
     environment:
       MYSQL_USER: root
-      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD:-root}'
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-root}"
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
       - mariadbdata:/var/lib/mysql/
+      - ./reset.sql:/tmp/mysql-init.sql
+    networks:
+      - app-network
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    volumes:
+      - postgresdata:/var/lib/postgres/
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-root}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-password}"
+    ports:
+      - "5432:5432"
     networks:
       - app-network
 
@@ -186,7 +240,7 @@ services:
       - MSSQL_SA_PASSWORD=${MSSQL_PASSWORD}
       - ACCEPT_EULA=Y
     volumes:
-       - mssqldata:/var/opt/mssql
+      - mssqldata:/var/opt/mssql
     ports:
       - "${MSSQL_PORT}:1433"
     networks:
@@ -219,11 +273,11 @@ services:
     image: mongo
     container_name: mongo
     ports:
-      - '${MONGO_DATABASE_PORT:-27017}:27017'
+      - "${MONGO_DATABASE_PORT:-27017}:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: '${MONGO_USERNAME}'
-      MONGO_INITDB_ROOT_PASSWORD: '${MONGO_PASSWORD}'
-      MONGO_INITDB_DATABASE: '${MONGO_DATABASE}'
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD}"
+      MONGO_INITDB_DATABASE: "${MONGO_DATABASE}"
     volumes:
       - mongodata:/data
     networks:
@@ -239,8 +293,8 @@ services:
     volumes:
       - elasticsearchdata:/data
     hostname: elasticsearch
-    cpu_shares: 512             # 0.5 CPU
-    mem_limit: 536870912        # 512 MB RAM
+    cpu_shares: 512 # 0.5 CPU
+    mem_limit: 536870912 # 512 MB RAM
     environment:
       - ELASTIC_USERNAME=elastic
       - ELASTIC_PASSWORD=password
@@ -264,11 +318,41 @@ services:
     networks:
       - app-network
 
+  #RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: "rabbitmq"
+    environment:
+      - RABBITMQ_USERNAME=root
+      - RABBITMQ_PASSWORD=password
+    ports:
+      - 5672:5672
+      - 15672:15672
+    #volumes:
+    # - rabbitmqdata:/var/lib/rabbitmq
+    #- rabbitmqlog:/var/log/rabbitmq
+    networks:
+      - app-network
+
+  #RabbitMQ Service
+  node14:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile14
+    image: node14
+    container_name: node14
+    user: root
+    ports:
+      - 3300:3300
+    networks:
+      - app-network
+
 #Docker Networks
 networks:
   app-network:
     driver: bridge
-    
+
 #Volumes
 volumes:
   mariadbdata:
@@ -280,4 +364,6 @@ volumes:
   elasticsearchdata:
     driver: local
   mssqldata:
+    driver: local
+  postgresdata:
     driver: local

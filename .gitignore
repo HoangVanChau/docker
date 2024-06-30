@@ -1,2 +1,5 @@
 .idea
 config
+storage
+.env
+storage/*
