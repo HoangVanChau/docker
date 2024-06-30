@@ -1,10 +1,11 @@
 FROM --platform=linux/amd64 webdevops/php-nginx-dev:7.4
 
 # Install NodeJs
-RUN curl -sL https://deb.nodesource.com/setup_14.x| bash -
+RUN curl -sL https://deb.nodesource.com/setup_16.x| bash -
 RUN apt-get install -y nodejs
 
-RUN npm install -g npm
+RUN npm install -g npm@8.19.1
+RUN npm install -g yarn@1.22.19
 
 
 RUN wget -O "/usr/local/bin/go-replace" "https://github.com/webdevops/goreplace/releases/download/1.1.2/gr-arm64-linux" \
@@ -22,4 +23,4 @@ COPY --chown=application:application  . /app
 WORKDIR /app
 USER application
 
-EXPOSE 80 443 2222
+EXPOSE 80 443 2222 8080
