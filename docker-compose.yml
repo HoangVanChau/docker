@@ -1,185 +1,78 @@
-version: "3.7"
 services:
-  #PHP 8.2 Service
+  #Nginx Service
+  nginx:
+    platform: linux/amd64
+    image: nginx:alpine
+    container_name: nginx
+    volumes:
+      - ../:/var/www:cached
+      - ./config/nginx/:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
   php82:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: Dockerfile82
-    image: php8.2
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: 8.2
+        XDEBUG_ENABLE: true
+        NODE_VERSION: 22
+    image: php82
     container_name: php82
-    user: root
-    environment:
-      - WEB_ALIAS_DOMAIN=local.com
-      - WEB_DOCUMENT_ROOT=/app/fss/magi-front/public
-      - PHP_DATE_TIMEZONE=UTC
-      - PHP_DISPLAY_ERRORS=1
-      - PHP_MEMORY_LIMIT=2048M
-      - PHP_MAX_EXECUTION_TIME=180000
-      - PHP_POST_MAX_SIZE=500M
-      - PHP_UPLOAD_MAX_FILESIZE=1024M
-      - PHP_DEBUGGER=1
-      - XDEBUG_MODE=debug
-      - XDEBUG_CLIENT_PORT=9000
-      - XDEBUG_CLIENT_HOST=host.docker.internal
-      - XDEBUG_DISCOVER_CLIENT_HOST=1
-      - XDEBUG_START_WITH_REQUEST=1
-      - XDEBUG_REMOTE_AUTOSTART=1
-      - XDEBUG_PROFILER_ENABLE=1
-      - XDEBUG_PROFILER_ENABLE_TRIGGER=1
-      - XDEBUG_IDE_KEY=PHPSTORM
-      - NEW_RELIC_LICENSE_KEY=369c54b44ea9d0cfd226dc4d134b624bFFFFNRAL
-      - NEW_RELIC_APPNAME=local
     volumes:
-      - ../:/app:cached
-      - ./config/nginx/:/opt/docker/etc/nginx/conf.d
-    ports:
-      - "80:80"
-      - "443:443"
-      - "5173:5173"
-      - "3000:3000"
+      - ../:/var/www:cached
+      - ./config/php/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./config/php/php.ini:/usr/local/etc/php/php.ini
+    expose:
+      - 9000
+      - 22
+      - 21
     networks:
       - app-network
-  #PHP 8.1 Service
   php81:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: Dockerfile81
-    image: php8.1
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: 8.1
+        XDEBUG_ENABLE: true
+        NODE_VERSION: 21
+    image: php81
     container_name: php81
-    user: root
-    environment:
-      - WEB_ALIAS_DOMAIN=local.com
-      - WEB_DOCUMENT_ROOT=/app/fss/magi-front/public
-      - PHP_DATE_TIMEZONE=UTC
-      - PHP_DISPLAY_ERRORS=1
-      - PHP_MEMORY_LIMIT=2048M
-      - PHP_MAX_EXECUTION_TIME=180000
-      - PHP_POST_MAX_SIZE=500M
-      - PHP_UPLOAD_MAX_FILESIZE=1024M
-      - PHP_DEBUGGER=1
-      - XDEBUG_MODE=debug
-      - XDEBUG_CLIENT_PORT=9000
-      - XDEBUG_CLIENT_HOST=host.docker.internal
-      - XDEBUG_DISCOVER_CLIENT_HOST=1
-      - XDEBUG_START_WITH_REQUEST=1
-      - XDEBUG_REMOTE_AUTOSTART=1
-      - XDEBUG_PROFILER_ENABLE=1
-      - XDEBUG_PROFILER_ENABLE_TRIGGER=1
-      - XDEBUG_IDE_KEY=PHPSTORM
-      - NEW_RELIC_LICENSE_KEY=369c54b44ea9d0cfd226dc4d134b624bFFFFNRAL
-      - NEW_RELIC_APPNAME=local
     volumes:
-      - ../:/app:cached
-      - ./config/nginx/:/opt/docker/etc/nginx/conf.d
-    ports:
-      - "80:80"
-      - "443:443"
-      - "5173:5173"
-      - "3000:3000"
+      - ../:/var/www:cached
+      - ./config/php/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./config/php/php.ini:/usr/local/etc/php/php.ini
+    expose:
+      - 9000
+      - 22
+      - 21
     networks:
       - app-network
-
-  #PHP 8.0 Service
   php80:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: Dockerfile80
-    image: php8.0
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: 8.0
+        XDEBUG_ENABLE: true
+        NODE_VERSION: 20
+    image: php80
     container_name: php80
-    user: root
-    environment:
-      - WEB_ALIAS_DOMAIN=local.crm.vn
-      - WEB_DOCUMENT_ROOT=/app
-      - PHP_DATE_TIMEZONE=UTC
-      - PHP_DISPLAY_ERRORS=1
-      - PHP_MEMORY_LIMIT=2048M
-      - PHP_MAX_EXECUTION_TIME=180000
-      - PHP_POST_MAX_SIZE=500M
-      - PHP_UPLOAD_MAX_FILESIZE=1024M
     volumes:
-      - ../:/app:cached
-      - ./config/nginx/:/opt/docker/etc/nginx/conf.d
-    ports:
-      - "80:80"
-      - "443:443"
+      - ../:/var/www:cached
+      - ./config/php/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./config/php/php.ini:/usr/local/etc/php/php.ini
+    expose:
+      - 9000
     networks:
       - app-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-  #PHP 7.4 Service
-  php74:
-    platform: linux/amd64
-    build:
-      context: .
-      dockerfile: Dockerfile74
-    image: php7.4
-    container_name: php74
-    user: root
-    environment:
-      - WEB_ALIAS_DOMAIN=local.crm.vn
-      - WEB_DOCUMENT_ROOT=/app
-      - PHP_DATE_TIMEZONE=UTC
-      - PHP_DISPLAY_ERRORS=1
-      - PHP_MEMORY_LIMIT=2048M
-      - PHP_MAX_EXECUTION_TIME=180000
-      - PHP_POST_MAX_SIZE=500M
-      - PHP_UPLOAD_MAX_FILESIZE=1024M
-      - PHP_DEBUGGER=1
-      - XDEBUG_MODE=debug
-      - XDEBUG_CLIENT_PORT=9003
-      - XDEBUG_DISCOVER_CLIENT_HOST=1
-      - XDEBUG_START_WITH_REQUEST=1
-      - XDEBUG_REMOTE_AUTOSTART=1
-      - XDEBUG_IDE_KEY=PHPSTORM
-    volumes:
-      - ../:/app:cached
-      - ./config/nginx/:/opt/docker/etc/nginx/conf.d
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
-      - "8000:8000"
-    networks:
-      - app-network
-
-  #PHP 7.3 Service
-  php73:
-    platform: linux/amd64
-    build:
-      context: .
-      dockerfile: Dockerfile73
-    image: php7.3
-    container_name: php73
-    user: root
-    environment:
-      - WEB_ALIAS_DOMAIN=local.crm.vn
-      - WEB_DOCUMENT_ROOT=/app
-      - PHP_DATE_TIMEZONE=UTC
-      - PHP_DISPLAY_ERRORS=1
-      - PHP_MEMORY_LIMIT=2048M
-      - PHP_MAX_EXECUTION_TIME=180000
-      - PHP_POST_MAX_SIZE=500M
-      - PHP_UPLOAD_MAX_FILESIZE=1024M
-      - PHP_DEBUGGER=1
-      - XDEBUG_MODE=debug
-      - XDEBUG_CLIENT_PORT=9003
-      - XDEBUG_DISCOVER_CLIENT_HOST=1
-      - XDEBUG_START_WITH_REQUEST=1
-      - XDEBUG_REMOTE_AUTOSTART=1
-      - XDEBUG_IDE_KEY=PHPSTORM
-    volumes:
-      - ../:/app:cached
-      - ./config/nginx/:/opt/docker/etc/nginx/conf.d
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      - app-network
-
   minio:
     image: minio/minio
     container_name: minio
@@ -201,6 +94,14 @@ services:
       - /data
     networks:
       - app-network
+  sqs:
+    image: roribio16/alpine-sqs:latest
+    container_name: alpine_sqs
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    environment:
+      - SQS_QUEUE_NAME=test-queue
   #MySQL Service
   mariadb:
     image: mariadb:latest
@@ -221,7 +122,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres:15
+    image: postgres:latest
     volumes:
       - postgresdata:/var/lib/postgres/
     environment:
@@ -234,13 +135,12 @@ services:
 
   #MSSQL Service
   mssql:
-    image: mcr.microsoft.com/azure-sql-edge
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: mssql
     environment:
       - MSSQL_SA_PASSWORD=${MSSQL_PASSWORD}
       - ACCEPT_EULA=Y
-    volumes:
-      - mssqldata:/var/opt/mssql
+
     ports:
       - "${MSSQL_PORT}:1433"
     networks:
@@ -285,7 +185,7 @@ services:
 
   #Elasticsearch service
   elasticsearch:
-    image: elasticsearch:8.4.3
+    image: elasticsearch:7.17.10
     container_name: elasticsearch
     ports:
       - 9200:9200
@@ -333,21 +233,37 @@ services:
     #- rabbitmqlog:/var/log/rabbitmq
     networks:
       - app-network
-
-  #RabbitMQ Service
-  node14:
-    platform: linux/amd64
-    build:
-      context: .
-      dockerfile: Dockerfile14
-    image: node14
-    container_name: node14
-    user: root
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud
     ports:
-      - 3300:3300
+      - 8888:80
+    volumes:
+      - ./nextcloud:/var/www/html
+  nats:
+    container_name: nats
+    image: bitnami/nats:latest
+    ports:
+      - 4222:4222
+      - 6222:6222
+      - 8222:8222
     networks:
       - app-network
 
+  json-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: json-server
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      - ./mock/magi-bff-mock-api-server/mock:/app/mock
+      - ./mock/magi-bff-mock-api-server/server.js:/app/server.js
+      - ./mock/magi-bff-mock-api-server/nodemon.json:/app/nodemon.json
+    command: nodemon --exec "node server.js ${CLIENT:-default}"
+    networks:
+      - app-network
 #Docker Networks
 networks:
   app-network:
@@ -366,4 +282,8 @@ volumes:
   mssqldata:
     driver: local
   postgresdata:
+    driver: local
+  nextclouddata:
+    driver: local
+  sqsdata:
     driver: local
